@@ -1,0 +1,93 @@
+# Template de .github/workflows/deploy.yml
+# Copie para .github/workflows/ de cada projeto e ajuste:
+#   1. NOME_DO_PROJETO (na pasta do servidor, embaixo)
+#   2. package-dir do backend, se diferente de backend/app
+#   3. Remova o job frontend/backend que o projeto não tiver
+#
+# Este template cobre o caso monorepo (backend Python + frontend React).
+# Para variações, veja MANUAL_QUALIDADE_CI.md.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:          # nos PRs roda só o quality, sem deploy
+
+jobs:
+  # ── Detecta o que mudou, para não rodar tudo à toa ──
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  # ── Qualidade do backend Python ──
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+    with:
+      working-directory: backend
+      package-dir: backend/app
+    permissions:
+      contents: read
+      security-events: write
+
+  # ── Qualidade do frontend React ──
+  # Se o frontend for vanilla, troque para static-quality.yml
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    uses: alrm1909/quality-workflows/.github/workflows/node-quality.yml@v1
+    with:
+      working-directory: frontend
+    permissions:
+      contents: read
+
+  # ── Semgrep e Gitleaks: sempre, sem filtro ──
+  semgrep:
+    uses: alrm1909/quality-workflows/.github/workflows/semgrep.yml@v1
+    permissions:
+      contents: read
+      security-events: write
+
+  secrets:
+    uses: alrm1909/quality-workflows/.github/workflows/secrets-scan.yml@v1
+    permissions:
+      contents: read
+      security-events: write
+
+  # ── Deploy: só roda se nada acima falhou ──
+  deploy:
+    needs: [backend, frontend, semgrep, secrets]
+    # always() + !failure() garante que jobs PULADOS pelo paths-filter
+    # não bloqueiem o deploy (job pulado não conta como falha).
+    if: |
+      always()
+      && github.ref == 'refs/heads/main'
+      && !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /opt/apps/NOME_DO_PROJETO
+            git pull origin main
+            docker compose up -d --build
+            docker compose ps

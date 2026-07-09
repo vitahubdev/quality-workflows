@@ -1,0 +1,44 @@
+# Template de .pre-commit-config.yaml
+# Copie para a RAIZ de cada projeto. Depois rode UMA vez: pre-commit install
+#
+# Roda antes de cada commit, na sua máquina, em ~2 segundos.
+# Pega o barato e urgente (formatação, segredo vazado) antes de chegar ao CI.
+# Bandit, Semgrep e mypy NÃO entram aqui — são lentos, ficam só no CI.
+
+repos:
+  # ── Python: lint + format ───────────────────────
+  # Remova este bloco se o projeto não tem backend Python.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  # ── JS/TS: lint + format ────────────────────────
+  # Remova este bloco se o projeto não tem frontend JS.
+  - repo: https://github.com/biomejs/pre-commit
+    rev: v2.2.0
+    hooks:
+      - id: biome-check
+        files: ^frontend/
+
+  # ── Segredos: SEM filtro de path ────────────────
+  # NUNCA remova este bloco. É o único risco irreversível.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.0
+    hooks:
+      - id: gitleaks
+
+  # ── Higiene geral ───────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace

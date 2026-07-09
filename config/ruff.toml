@@ -1,0 +1,26 @@
+# Configuração compartilhada do Ruff.
+# Projetos podem herdar esta ou definir a própria em pyproject.toml.
+
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = [
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "I",     # isort (ordenação de imports)
+    "B",     # flake8-bugbear (bugs prováveis)
+    "UP",    # pyupgrade (sintaxe moderna)
+    "S",     # flake8-bandit (segurança, subset rápido)
+    "ASYNC", # regras de async
+]
+ignore = [
+    "E501",  # line-length é tratado pelo formatter
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["S101"]              # assert é normal em teste
+"**/migrations/*" = ["E501"]     # migrations podem ter linhas longas
+
+[format]
+quote-style = "double"

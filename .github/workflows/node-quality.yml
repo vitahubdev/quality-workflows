@@ -1,0 +1,64 @@
+name: Node Quality
+
+# Workflow reutilizável para frontend React/Vite (com package.json).
+#   uses: alrm1909/quality-workflows/.github/workflows/node-quality.yml@v1
+#
+# Roda: Biome (lint + format, config central), tsc (tipagem), npm audit (CVE).
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: 'frontend'
+        description: 'Pasta com o package.json.'
+      node-version:
+        type: string
+        default: '22'
+      config-ref:
+        type: string
+        default: 'v1'
+        description: 'Tag/branch do quality-workflows de onde baixar as configs.'
+      audit-level:
+        type: string
+        default: 'high'
+        description: 'Nível mínimo que falha o npm audit: low | moderate | high | critical.'
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do projeto
+        uses: actions/checkout@v4
+
+      - name: Checkout das configs centrais
+        uses: actions/checkout@v4
+        with:
+          repository: alrm1909/quality-workflows
+          ref: ${{ inputs.config-ref }}
+          path: .quality-config
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+      - name: Install
+        working-directory: ${{ inputs.working-directory }}
+        run: npm ci --no-audit --no-fund
+
+      # ── Biome: lint + format (config central) ────
+      - name: Biome
+        run: npx --yes @biomejs/biome ci --config-path .quality-config/config/biome.json ${{ inputs.working-directory }}
+
+      # ── TypeScript: tipagem ──────────────────────
+      - name: TypeScript
+        working-directory: ${{ inputs.working-directory }}
+        run: npx tsc --noEmit
+
+      # ── npm audit: CVE em dependências ───────────
+      - name: npm audit
+        working-directory: ${{ inputs.working-directory }}
+        continue-on-error: true
+        run: npm audit --audit-level=${{ inputs.audit-level }}

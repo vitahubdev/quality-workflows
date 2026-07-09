@@ -1,0 +1,21 @@
+# Configuração compartilhada do Gitleaks.
+# Estende as regras padrão e adiciona allowlist do ecossistema.
+
+title = "quality-workflows gitleaks config"
+
+[extend]
+useDefault = true    # herda todas as ~150 regras padrão do Gitleaks
+
+[allowlist]
+description = "Falsos positivos conhecidos do ecossistema"
+paths = [
+  '''\.env\.example$''',        # placeholders vazios, não são segredos
+  '''.*\.md$''',                # exemplos em documentação
+]
+# Regex de valores que são claramente exemplo, não credencial real:
+regexes = [
+  '''PIN_6_DIGITOS''',
+  '''TROCAR''',
+  '''SenhaForte''',
+  '''chave-secreta''',
+]

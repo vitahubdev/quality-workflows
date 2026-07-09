@@ -1,0 +1,41 @@
+name: Semgrep
+
+# Workflow reutilizável de análise semântica (taint analysis) cross-language.
+#   uses: alrm1909/quality-workflows/.github/workflows/semgrep.yml@v1
+#
+# Um job para o repositório inteiro. Semgrep detecta a linguagem por arquivo.
+# Usa rulesets do registry público (não precisa de config local).
+# Exporta SARIF para a aba Security > Code scanning.
+
+on:
+  workflow_call:
+    inputs:
+      rules:
+        type: string
+        default: 'p/python p/javascript p/react p/secrets p/owasp-top-ten'
+        description: 'Rulesets do registry público, separados por espaço.'
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Semgrep scan
+        continue-on-error: true
+        run: |
+          semgrep scan \
+            $(for r in ${{ inputs.rules }}; do echo --config=$r; done) \
+            --sarif --output=semgrep.sarif
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep

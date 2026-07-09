@@ -1,0 +1,98 @@
+name: Python Quality
+
+# Workflow reutilizável. Chamado pelos projetos via:
+#   uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+#
+# Roda: Ruff (lint + format), mypy (tipagem), Bandit (segurança), pip-audit (CVE).
+# Usa as configs CENTRAIS deste repositório (config/ruff.toml, config/bandit.yaml),
+# baixadas em runtime — então mudar a regra aqui propaga para todos os projetos.
+# Bandit exporta SARIF para a aba Security > Code scanning do projeto chamador.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: '.'
+        description: 'Pasta onde está o requirements.txt.'
+      package-dir:
+        type: string
+        default: 'app'
+        description: 'Pasta do código-fonte, RELATIVA À RAIZ DO REPO. Ex: backend/app'
+      python-version:
+        type: string
+        default: '3.12'
+      config-ref:
+        type: string
+        default: 'v1'
+        description: 'Tag/branch do quality-workflows de onde baixar as configs.'
+      strict-mypy:
+        type: boolean
+        default: false
+        description: 'Se true, mypy falha o job. Comece false em código legado.'
+      strict-bandit:
+        type: boolean
+        default: false
+        description: 'Se true, Bandit falha o job. Comece false — falso positivo é comum.'
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write     # necessário para o upload-sarif
+    steps:
+      # Checkout 1: o código do PROJETO que está sendo verificado
+      - name: Checkout do projeto
+        uses: actions/checkout@v4
+
+      # Checkout 2: as CONFIGS CENTRAIS deste repositório, numa subpasta isolada.
+      # É isto que torna a config verdadeiramente central: o projeto não guarda
+      # cópia do ruff.toml; ele é baixado daqui a cada execução.
+      - name: Checkout das configs centrais
+        uses: actions/checkout@v4
+        with:
+          repository: alrm1909/quality-workflows
+          ref: ${{ inputs.config-ref }}
+          path: .quality-config
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      # ── Ruff: lint (usa config central) ──────────
+      - name: Ruff lint
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: check --config .quality-config/config/ruff.toml --output-format=github ${{ inputs.package-dir }}
+
+      # ── Ruff: format check (usa config central) ──
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: format --config .quality-config/config/ruff.toml --check ${{ inputs.package-dir }}
+
+      # ── mypy: tipagem ────────────────────────────
+      - name: mypy
+        continue-on-error: ${{ !inputs.strict-mypy }}
+        run: pipx run mypy ${{ inputs.package-dir }} --ignore-missing-imports
+
+      # ── Bandit: segurança → SARIF (usa config central) ──
+      # Rodamos da RAIZ com escopo explícito (não `cd`), senão os paths do SARIF
+      # ficam relativos à subpasta e o alerta não vira link clicável no GitHub.
+      - name: Bandit
+        continue-on-error: ${{ !inputs.strict-bandit }}
+        run: pipx run 'bandit[sarif]' -c .quality-config/config/bandit.yaml -r ${{ inputs.package-dir }} -f sarif -o bandit.sarif
+
+      - name: Upload Bandit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()          # sobe o relatório mesmo se o Bandit achou algo
+        with:
+          sarif_file: bandit.sarif
+          category: bandit
+
+      # ── pip-audit: CVE em dependências ───────────
+      - name: pip-audit
+        working-directory: ${{ inputs.working-directory }}
+        continue-on-error: true   # CVE sem patch não deve travar deploy no dia 1
+        run: pipx run pip-audit -r requirements.txt --desc

@@ -1,0 +1,13 @@
+# Configuração compartilhada do Bandit.
+# Uso: bandit -r <pasta> -c bandit.yaml
+
+# Pastas ignoradas na varredura
+exclude_dirs:
+  - tests
+  - migrations
+  - .venv
+
+# Testes de severidade baixa que geram muito ruído podem ser desligados aqui.
+# Exemplo (descomente se necessário):
+# skips:
+#   - B101   # assert_used
