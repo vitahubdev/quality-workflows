@@ -27,7 +27,7 @@ No `.github/workflows/deploy.yml` do projeto:
 ```yaml
 jobs:
   backend:
-    uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
     with:
       working-directory: backend
       package-dir: backend/app
@@ -36,7 +36,7 @@ jobs:
       security-events: write
 
   secrets:
-    uses: alrm1909/quality-workflows/.github/workflows/secrets-scan.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/secrets-scan.yml@v1
     permissions:
       contents: read
       security-events: write

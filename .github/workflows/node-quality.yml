@@ -1,7 +1,7 @@
 name: Node Quality
 
 # Workflow reutilizável para frontend React/Vite (com package.json).
-#   uses: alrm1909/quality-workflows/.github/workflows/node-quality.yml@v1
+#   uses: vitahubdev/quality-workflows/.github/workflows/node-quality.yml@v1
 #
 # Roda: Biome (lint + format, config central), tsc (tipagem), npm audit (CVE).
 
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout das configs centrais
         uses: actions/checkout@v4
         with:
-          repository: alrm1909/quality-workflows
+          repository: vitahubdev/quality-workflows
           ref: ${{ inputs.config-ref }}
           path: .quality-config
 

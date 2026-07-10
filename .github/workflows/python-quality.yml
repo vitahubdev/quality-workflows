@@ -1,7 +1,7 @@
 name: Python Quality
 
 # Workflow reutilizável. Chamado pelos projetos via:
-#   uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+#   uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
 #
 # Roda: Ruff (lint + format), mypy (tipagem), Bandit (segurança), pip-audit (CVE).
 # Usa as configs CENTRAIS deste repositório (config/ruff.toml, config/bandit.yaml),
@@ -52,7 +52,7 @@ jobs:
       - name: Checkout das configs centrais
         uses: actions/checkout@v4
         with:
-          repository: alrm1909/quality-workflows
+          repository: vitahubdev/quality-workflows
           ref: ${{ inputs.config-ref }}
           path: .quality-config
 
@@ -87,6 +87,8 @@ jobs:
       - name: Upload Bandit SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()          # sobe o relatório mesmo se o Bandit achou algo
+        continue-on-error: true   # repo sem Advanced Security (privado/conta pessoal):
+                                  # o upload falha, mas os achados ficam no log do job
         with:
           sarif_file: bandit.sarif
           category: bandit

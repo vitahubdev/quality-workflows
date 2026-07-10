@@ -146,7 +146,7 @@ Quando a aba Security estiver limpa, torne o gate rígido. No `deploy.yml` do pr
 
 ```yaml
   backend:
-    uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
     with:
       working-directory: backend
       package-dir: backend/app

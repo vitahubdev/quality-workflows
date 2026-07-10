@@ -7,7 +7,7 @@ Faça isto **uma vez**. Depois os projetos passam a consumi-lo.
 
 ## Pré-requisito
 
-Uma conta GitHub (`alrm1909`) e Git configurado na máquina.
+Uma conta GitHub (`vitahubdev`) e Git configurado na máquina.
 
 ---
 
@@ -15,7 +15,7 @@ Uma conta GitHub (`alrm1909`) e Git configurado na máquina.
 
 🌐 Em `https://github.com/new`:
 
-- **Owner:** alrm1909
+- **Owner:** vitahubdev
 - **Repository name:** `quality-workflows`
 - **Visibilidade:** Private (recomendado)
 - **NÃO** inicialize com README (esta pasta já tem um)
@@ -24,7 +24,7 @@ Clique em *Create repository*.
 
 > ⚠️ **Repositório privado + workflow reutilizável privado:** funciona, mas só para
 > repositórios da MESMA conta/organização. Como todos os seus projetos estão sob
-> `alrm1909`, está tudo certo. Se algum projeto estiver em outra org, ou este repo
+> `vitahubdev`, está tudo certo. Se algum projeto estiver em outra org, ou este repo
 > precisa ser público, ou o projeto precisa migrar para a mesma org.
 
 ---
@@ -38,7 +38,7 @@ git init
 git add .
 git commit -m "chore: workflows de qualidade reutilizáveis"
 git branch -M main
-git remote add origin git@github.com:alrm1909/quality-workflows.git
+git remote add origin git@github.com:vitahubdev/quality-workflows.git
 git push -u origin main
 ```
 
@@ -71,7 +71,7 @@ permissão de leitura. Uma vez, por organização:
 Em *Actions permissions* → seção sobre acesso entre repositórios, permita que
 workflows de `quality-workflows` sejam usados por outros repositórios da conta.
 
-> Se todos os repositórios são da conta pessoal `alrm1909`, geralmente já funciona
+> Se todos os repositórios são da conta pessoal `vitahubdev`, geralmente já funciona
 > sem ajuste. Se der erro `workflow was not found` num projeto, é aqui que se resolve.
 
 ---
@@ -84,7 +84,7 @@ Antes de migrar um projeto real, confirme que o repositório está saudável:
 reutilizáveis não rodam sozinhos — só quando chamados — então a aba fica vazia,
 o que é o esperado).
 
-Confirme que a tag existe: `https://github.com/alrm1909/quality-workflows/tags`
+Confirme que a tag existe: `https://github.com/vitahubdev/quality-workflows/tags`
 deve listar `v1`.
 
 ---

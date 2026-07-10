@@ -1,7 +1,7 @@
 name: Static Quality
 
 # Workflow reutilizável para frontend vanilla (HTML/CSS/JS puro, SEM package.json).
-#   uses: alrm1909/quality-workflows/.github/workflows/static-quality.yml@v1
+#   uses: vitahubdev/quality-workflows/.github/workflows/static-quality.yml@v1
 #
 # Só Biome (config central) — não há dependências nem TypeScript.
 
@@ -28,7 +28,7 @@ jobs:
       - name: Checkout das configs centrais
         uses: actions/checkout@v4
         with:
-          repository: alrm1909/quality-workflows
+          repository: vitahubdev/quality-workflows
           ref: ${{ inputs.config-ref }}
           path: .quality-config
 

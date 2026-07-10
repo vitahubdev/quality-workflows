@@ -36,7 +36,7 @@ jobs:
   backend:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
-    uses: alrm1909/quality-workflows/.github/workflows/python-quality.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
     with:
       working-directory: backend
       package-dir: backend/app
@@ -49,7 +49,7 @@ jobs:
   frontend:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
-    uses: alrm1909/quality-workflows/.github/workflows/node-quality.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/node-quality.yml@v1
     with:
       working-directory: frontend
     permissions:
@@ -57,13 +57,13 @@ jobs:
 
   # ── Semgrep e Gitleaks: sempre, sem filtro ──
   semgrep:
-    uses: alrm1909/quality-workflows/.github/workflows/semgrep.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/semgrep.yml@v1
     permissions:
       contents: read
       security-events: write
 
   secrets:
-    uses: alrm1909/quality-workflows/.github/workflows/secrets-scan.yml@v1
+    uses: vitahubdev/quality-workflows/.github/workflows/secrets-scan.yml@v1
     permissions:
       contents: read
       security-events: write

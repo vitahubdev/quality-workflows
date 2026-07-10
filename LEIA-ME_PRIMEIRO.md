@@ -39,7 +39,7 @@ base + 2 deltas. Pode arquivá-los.
 ## TIPO 2 — CÓDIGO (vai para o Git)
 
 A pasta `quality-workflows/` **é um repositório real.** Vai para o GitHub como
-`alrm1909/quality-workflows`. Os projetos apontam para ele.
+`vitahubdev/quality-workflows`. Os projetos apontam para ele.
 
 Isto NÃO é documentação. São arquivos que EXECUTAM quando você dá push num projeto.
 

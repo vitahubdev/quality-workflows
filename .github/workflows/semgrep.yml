@@ -1,7 +1,7 @@
 name: Semgrep
 
 # Workflow reutilizável de análise semântica (taint analysis) cross-language.
-#   uses: alrm1909/quality-workflows/.github/workflows/semgrep.yml@v1
+#   uses: vitahubdev/quality-workflows/.github/workflows/semgrep.yml@v1
 #
 # Um job para o repositório inteiro. Semgrep detecta a linguagem por arquivo.
 # Usa rulesets do registry público (não precisa de config local).
@@ -36,6 +36,7 @@ jobs:
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true   # repo sem Advanced Security: achados ficam no log
         with:
           sarif_file: semgrep.sarif
           category: semgrep
