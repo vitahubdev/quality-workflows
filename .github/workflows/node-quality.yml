@@ -3,7 +3,7 @@ name: Node Quality
 # Workflow reutilizável para frontend React/Vite (com package.json).
 #   uses: vitahubdev/quality-workflows/.github/workflows/node-quality.yml@v1
 #
-# Roda: Biome (lint + format, config central), tsc (tipagem), npm audit (CVE).
+# Roda: Biome (lint + format, config DO PROJETO), tsc (tipagem), npm audit (CVE).
 
 on:
   workflow_call:
@@ -31,13 +31,6 @@ jobs:
       - name: Checkout do projeto
         uses: actions/checkout@v4
 
-      - name: Checkout das configs centrais
-        uses: actions/checkout@v4
-        with:
-          repository: vitahubdev/quality-workflows
-          ref: ${{ inputs.config-ref }}
-          path: .quality-config
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
@@ -48,9 +41,10 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: npm ci --no-audit --no-fund
 
-      # ── Biome: lint + format (config central) ────
+      # ── Biome: lint + format (config DO PROJETO, auto-descoberta) ──
+      # Monorepo: biome.json "root" na raiz + frontend/biome.json "root": false.
       - name: Biome
-        run: npx --yes @biomejs/biome ci --config-path .quality-config/config/biome.json ${{ inputs.working-directory }}
+        run: npx --yes @biomejs/biome ci ${{ inputs.working-directory }}
 
       # ── TypeScript: tipagem ──────────────────────
       - name: TypeScript

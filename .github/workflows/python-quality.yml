@@ -4,8 +4,9 @@ name: Python Quality
 #   uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
 #
 # Roda: Ruff (lint + format), mypy (tipagem), Bandit (segurança), pip-audit (CVE).
-# Usa as configs CENTRAIS deste repositório (config/ruff.toml, config/bandit.yaml),
-# baixadas em runtime — então mudar a regra aqui propaga para todos os projetos.
+# Ruff usa a config DO PROJETO (backend/pyproject.toml ou ruff.toml), auto-descoberta —
+# a mesma que o pre-commit e o editor leem, garantindo local == CI. Bandit (só CI) usa
+# a config CENTRAL como piso de segurança, baixada em runtime.
 # Bandit exporta SARIF para a aba Security > Code scanning do projeto chamador.
 
 on:
@@ -46,9 +47,9 @@ jobs:
       - name: Checkout do projeto
         uses: actions/checkout@v4
 
-      # Checkout 2: as CONFIGS CENTRAIS deste repositório, numa subpasta isolada.
-      # É isto que torna a config verdadeiramente central: o projeto não guarda
-      # cópia do ruff.toml; ele é baixado daqui a cada execução.
+      # Checkout 2: a config CENTRAL do Bandit (piso de segurança, só CI), numa
+      # subpasta isolada. Lint/format (Ruff, Biome) usam a config DO PROJETO;
+      # só o Bandit puxa a central.
       - name: Checkout das configs centrais
         uses: actions/checkout@v4
         with:
@@ -60,17 +61,17 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
 
-      # ── Ruff: lint (usa config central) ──────────
+      # ── Ruff: lint (config DO PROJETO, auto-descoberta) ──
       - name: Ruff lint
         uses: astral-sh/ruff-action@v3
         with:
-          args: check --config .quality-config/config/ruff.toml --output-format=github ${{ inputs.package-dir }}
+          args: check --output-format=github ${{ inputs.package-dir }}
 
-      # ── Ruff: format check (usa config central) ──
+      # ── Ruff: format check (config DO PROJETO) ──
       - name: Ruff format check
         uses: astral-sh/ruff-action@v3
         with:
-          args: format --config .quality-config/config/ruff.toml --check ${{ inputs.package-dir }}
+          args: format --check ${{ inputs.package-dir }}
 
       # ── mypy: tipagem ────────────────────────────
       - name: mypy
