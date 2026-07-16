@@ -63,13 +63,13 @@ jobs:
 
       # ── Ruff: lint (config DO PROJETO, auto-descoberta) ──
       - name: Ruff lint
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: check --output-format=github ${{ inputs.package-dir }}
 
       # ── Ruff: format check (config DO PROJETO) ──
       - name: Ruff format check
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: format --check ${{ inputs.package-dir }}
 
