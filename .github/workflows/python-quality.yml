@@ -45,31 +45,31 @@ jobs:
     steps:
       # Checkout 1: o código do PROJETO que está sendo verificado
       - name: Checkout do projeto
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Checkout 2: a config CENTRAL do Bandit (piso de segurança, só CI), numa
       # subpasta isolada. Lint/format (Ruff, Biome) usam a config DO PROJETO;
       # só o Bandit puxa a central.
       - name: Checkout das configs centrais
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: vitahubdev/quality-workflows
           ref: ${{ inputs.config-ref }}
           path: .quality-config
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ inputs.python-version }}
 
       # ── Ruff: lint (config DO PROJETO, auto-descoberta) ──
       - name: Ruff lint
-        uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v4
         with:
           args: check --output-format=github ${{ inputs.package-dir }}
 
       # ── Ruff: format check (config DO PROJETO) ──
       - name: Ruff format check
-        uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v4
         with:
           args: format --check ${{ inputs.package-dir }}
 
@@ -86,7 +86,7 @@ jobs:
         run: pipx run 'bandit[sarif]' -c .quality-config/config/bandit.yaml -r ${{ inputs.package-dir }} -f sarif -o bandit.sarif
 
       - name: Upload Bandit SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()          # sobe o relatório mesmo se o Bandit achou algo
         continue-on-error: true   # repo sem Advanced Security (privado/conta pessoal):
                                   # o upload falha, mas os achados ficam no log do job

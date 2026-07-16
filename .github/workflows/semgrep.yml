@@ -24,7 +24,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Semgrep scan
         continue-on-error: true
@@ -34,7 +34,7 @@ jobs:
             --sarif --output=semgrep.sarif
 
       - name: Upload Semgrep SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         continue-on-error: true   # repo sem Advanced Security: achados ficam no log
         with:

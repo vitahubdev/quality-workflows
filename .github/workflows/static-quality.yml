@@ -3,7 +3,7 @@ name: Static Quality
 # Workflow reutilizável para frontend vanilla (HTML/CSS/JS puro, SEM package.json).
 #   uses: vitahubdev/quality-workflows/.github/workflows/static-quality.yml@v1
 #
-# Só Biome (config central) — não há dependências nem TypeScript.
+# Só Biome (config DO PROJETO) — não há dependências nem TypeScript.
 
 on:
   workflow_call:
@@ -23,18 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do projeto
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Checkout das configs centrais
-        uses: actions/checkout@v4
-        with:
-          repository: vitahubdev/quality-workflows
-          ref: ${{ inputs.config-ref }}
-          path: .quality-config
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node-version }}
 
+      # Biome usa a config DO PROJETO (biome.json na raiz do projeto vanilla).
       - name: Biome
-        run: npx --yes @biomejs/biome ci --config-path .quality-config/config/biome.json ${{ inputs.working-directory }}
+        run: npx --yes @biomejs/biome ci ${{ inputs.working-directory }}
