@@ -9,7 +9,7 @@ repos:
   # ── Python: lint + format ───────────────────────
   # Remova este bloco se o projeto não tem backend Python.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: v0.15.21          # = versão pinada no python-quality.yml (local == CI)
     hooks:
       - id: ruff
         args: [--fix]
@@ -20,7 +20,7 @@ repos:
   # ── JS/TS: lint + format ────────────────────────
   # Remova este bloco se o projeto não tem frontend JS.
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.2.0
+    rev: v2.5.4
     hooks:
       - id: biome-check
         files: ^frontend/

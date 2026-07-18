@@ -1,16 +1,14 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "organizeImports": { "enabled": true },
+  "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "on" } }
+  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "security": {
-        "noDangerouslySetInnerHtml": "warn"
-      },
-      "suspicious": {
-        "noConsoleLog": "warn"
-      }
+      "security": { "noDangerouslySetInnerHtml": "warn" },
+      "suspicious": { "noConsole": "warn" }
     }
   },
   "formatter": {
