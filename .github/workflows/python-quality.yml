@@ -62,18 +62,26 @@ jobs:
           python-version: ${{ inputs.python-version }}
 
       # ── Ruff: lint (config DO PROJETO, auto-descoberta) ──
+      # Escopo = `working-directory` (a raiz do backend), o MESMO que o pre-commit
+      # cobre com `files: ^backend/` → local == CI de verdade.
+      # ⚠️ O path vai no input `src`, NUNCA em `args`: o ruff-action anexa `src`
+      # (default `.`) ao final do comando. Se o path fosse em `args`, o `.` viria
+      # junto e o ruff lintaria o REPO INTEIRO (com a config default fora do
+      # backend), divergindo do pre-commit e quebrando a garantia "config do projeto".
       - name: Ruff lint
         uses: astral-sh/ruff-action@v4.1.0
         with:
           version: "0.15.21"      # pino: = rev do ruff-pre-commit (local == CI)
-          args: check --output-format=github ${{ inputs.package-dir }}
+          src: ${{ inputs.working-directory }}
+          args: check --output-format=github
 
       # ── Ruff: format check (config DO PROJETO) ──
       - name: Ruff format check
         uses: astral-sh/ruff-action@v4.1.0
         with:
           version: "0.15.21"
-          args: format --check ${{ inputs.package-dir }}
+          src: ${{ inputs.working-directory }}
+          args: format --check
 
       # ── mypy: tipagem ────────────────────────────
       - name: mypy
