@@ -23,6 +23,14 @@ on:
         type: string
         default: 'high'
         description: 'Nível mínimo que falha o npm audit: low | moderate | high | critical.'
+      biome-version:
+        type: string
+        default: '2.5.4'
+        description: >
+          Versão EXATA do Biome. Tem de ser a mesma da rev do hook biomejs/pre-commit
+          e do $schema dos biome.json do projeto — é o que garante local == CI.
+          Existe como input para o projeto que sobe o Biome poder casar as duas
+          pontas SEM mover a tag compartilhada deste repositório.
 
 jobs:
   node:
@@ -43,8 +51,14 @@ jobs:
 
       # ── Biome: lint + format (config DO PROJETO, auto-descoberta) ──
       # Monorepo: biome.json "root" na raiz + frontend/biome.json "root": false.
+      #
+      # ⚠️ VERSÃO PINADA, nunca `npx @biomejs/biome` sem `@versão`. Sem o pin, o npx
+      # instala a LATEST: o CI divergia do pre-commit (que fixa a rev) e do $schema
+      # dos biome.json, e — pior — passava a reprovar sozinho no dia em que o Biome
+      # publicasse regra nova, em todos os projetos de uma vez, sem ninguém ter
+      # tocado em nada. É o oposto da política de versão exata deste manual.
       - name: Biome
-        run: npx --yes @biomejs/biome ci ${{ inputs.working-directory }}
+        run: npx --yes @biomejs/biome@${{ inputs.biome-version }} ci ${{ inputs.working-directory }}
 
       # ── TypeScript: tipagem ──────────────────────
       - name: TypeScript
