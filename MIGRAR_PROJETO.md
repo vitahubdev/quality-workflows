@@ -70,6 +70,45 @@ Agora edite o novo `deploy.yml` e ajuste:
 
 Compare com o `.bak` para garantir que o passo de deploy (host, script SSH) ficou igual.
 
+### 🔴 Se você NÃO usar o template — o `permissions` não é opcional
+
+Nem todo projeto quer entregar o `deploy.yml` (o do `apis`, por exemplo, sobe stack
+Compose, roda migrations e confere o boot do worker — o template não faz nada disso).
+Nesse caso você escreve o chamador à mão, e **tem de copiar os blocos `permissions`
+que o template já traz**:
+
+```yaml
+jobs:
+  backend:
+    uses: vitahubdev/quality-workflows/.github/workflows/python-quality.yml@v1
+    permissions:
+      contents: read
+      security-events: write     # <- sem isto, o run MORRE antes de comecar
+    with:
+      working-directory: backend
+      package-dir: backend/app
+```
+
+**Por quê:** workflow chamado **não escala permissão** — ele só recebe o que o
+chamador concede. Se o repositório está em `Settings → Actions → Workflow permissions:
+Read repository contents` (que é o default de muitos), o `python-quality` pede
+`security-events: write` para subir o SARIF do Bandit, não recebe, e o Actions
+**mata o run em `startup_failure`**.
+
+⚠️ **E o sintoma é traiçoeiro: não há job, não há log, não há anotação.** É idêntico
+ao de uma **queda do GitHub Actions** — foi exatamente essa confusão que custou uma
+investigação inteira no `apis` em 26–27/08/2026.
+
+📌 **O sinal que separa os dois:** numa queda do Actions **nenhum** run nasce. Aqui,
+os outros workflows do mesmo push nascem normalmente e **só o chamador morre**.
+**Run vizinho saudável ⇒ o problema é do seu arquivo, não do GitHub.**
+
+Conferir o default do repositório:
+
+```bash
+gh api repos/<owner>/<repo>/actions/permissions/workflow
+```
+
 ---
 
 ## Passo 3 — preparar o repositório para os alertas
@@ -112,6 +151,36 @@ pre-commit run gitleaks --all-files
 
 Se acusar segredo real: **rotacione a credencial** (ver `MANUAL_INFRA_BASE.md` §5),
 tire do código, ponha no `.env`. Se for falso positivo, adicione à allowlist.
+
+> ⚠️ **`pre-commit run gitleaks` NÃO é o mesmo que o CI.** O hook varre o *working
+> tree*; o workflow roda `gitleaks detect`, que varre **todo o histórico do Git**
+> (`fetch-depth: 0`). Local verde não prova CI verde — e a recíproca do erro é pior:
+> segredo que você já **apagou** do código continua no histórico, e o CI continua
+> acusando até a credencial ser rotacionada e o achado tratado.
+
+#### 🔴 Falso positivo: fingerprint, e NUNCA transcreva o valor
+
+Para os falsos positivos do próprio repositório (fixture de teste, quase sempre),
+prefira um **`.gitleaksignore` na raiz, por fingerprint**, à allowlist de path ou
+regex na config central:
+
+- **fingerprint falha FECHADO** — fixture nova acende vermelho, alguém confere e
+  acrescenta a linha. Incômodo pequeno, direção certa.
+- **allowlist de `tests/` (ou regex `"teste"`) falha ABERTO** — segredo de verdade
+  que vazasse para um arquivo de teste passaria calado, e essa é a única falha
+  irreversível que este scanner existe para pegar.
+
+⚠️ **E não escreva os valores no cabeçalho do arquivo.** O gitleaks varre o
+`.gitleaksignore` como qualquer outro arquivo: um cabeçalho que cita as três linhas
+"para provar que eram fixture" vira **três achados novos**. Aconteceu no `apis` em
+27/08/2026 — o CI ficou vermelho por causa do comentário que explicava por que
+estava verde. **Descreva a forma do segredo; nunca reproduza o valor.**
+
+📌 **E corrigir o texto não basta:** o commit fica no histórico, e o gitleaks varre
+histórico. Em branch de PR que vai por **squash**, o histórico é descartável —
+colapse os commits (`git reset --soft <base>` + `git push --force-with-lease`) e o
+achado some na raiz, em vez de virar mais fingerprints apontando para um commit que
+nunca chega à `main`.
 
 **4c. Só então, o push.**
 
@@ -168,11 +237,14 @@ Para Monetarie e APIs de saúde, aperte antes — idealmente já no Passo 2.
 - [ ] `.pre-commit-config.yaml` copiado e ajustado à stack
 - [ ] `pre-commit install` rodado
 - [ ] `deploy.yml` substituído, `NOME_DO_PROJETO` e `package-dir` ajustados
+- [ ] **Se escreveu o chamador à mão: `permissions` em cada job** (Passo 2) —
+      sem isso o run morre em `startup_failure`, sem log
 - [ ] Job do frontend correto (node vs static) ou removido
 - [ ] Passo de deploy conferido contra o `.bak`
 - [ ] Dependabot + Code scanning ligados
-- [ ] Commit de formatação isolado
+- [ ] Commit de formatação isolado — ou **`strict-format: false`** se pulou
 - [ ] Gitleaks limpo (segredos rotacionados se necessário)
+- [ ] **`.gitleaksignore` sem valores transcritos** no cabeçalho (Passo 4b)
 - [ ] Push feito, quality rodou ANTES de deploy na aba Actions
 - [ ] Aba Security mostra alertas com link para a linha
 - [ ] `.bak` removido depois de confirmar que o deploy funciona
