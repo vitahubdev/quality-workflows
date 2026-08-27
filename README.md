@@ -88,3 +88,10 @@ Nem todo projeto precisa de tudo. Resumo (detalhe em `MANUAL_QUALIDADE_CI.md` §
 - **Bandit / Semgrep / pip-audit:** backend com input externo.
 - **Gate bloqueante:** Monetarie e APIs de saúde desde o dia 1. Demais, avisa primeiro
   (`strict-*: false` nos inputs).
+
+> ⚠️ **`strict-format` é o único que começa `true`.** Projeto novo nasce formatado e deve
+> continuar; os outros dois (`strict-mypy`, `strict-bandit`) são ruidosos por natureza e
+> começam frouxos. **Projeto LEGADO passa `strict-format: false`** — ao ligar num repo em
+> produção o `--check` acusa o repositório inteiro de uma vez (medido: **292 de 309 arquivos**
+> num backend real), o que não é correção, é reescrita. Ligue lint, tipagem e segurança hoje;
+> formate em commit próprio, quando puder revisar o ruído sozinho.

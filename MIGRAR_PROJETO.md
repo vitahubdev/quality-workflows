@@ -125,6 +125,11 @@ git push origin main
 `strict-bandit: false` e `strict-mypy: false` por padrão — então Bandit e mypy
 **avisam sem travar**. Só Gitleaks e erros de sintaxe bloqueiam de início.
 
+> ⚠️ **Se você PULOU o 4a** (formatação), passe também **`strict-format: false`** no
+> `deploy.yml` — senão o `ruff format --check` trava o job sozinho, e você fica sem
+> lint, sem tipagem e sem segurança por causa de espaço em branco. Ele é o único
+> `strict-*` que começa `true`, de propósito (README, "Perfil de risco").
+
 ---
 
 ## Passo 5 — olhar os alertas e corrigir
