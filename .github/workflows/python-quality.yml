@@ -27,6 +27,10 @@ on:
         type: string
         default: 'v1'
         description: 'Tag/branch do quality-workflows de onde baixar as configs.'
+      strict-format:
+        type: boolean
+        default: true
+        description: 'Se false, `ruff format --check` avisa sem falhar. Ver nota no passo.'
       strict-mypy:
         type: boolean
         default: false
@@ -76,8 +80,24 @@ jobs:
           args: check --output-format=github
 
       # ── Ruff: format check (config DO PROJETO) ──
+      # ⚠️ `strict-format` default TRUE — este passo trava, e é o que já valia.
+      # Projeto NOVO nasce formatado e deve continuar; afrouxar o default
+      # silenciosamente tiraria o gate de quem já conta com ele.
+      #
+      # O escape existe para código LEGADO, e o motivo é de escala, não de gosto:
+      # ao ligar isto num projeto em produção o `--check` acusa o repositório
+      # INTEIRO de uma vez (medido no `apis` em 26/08/2026: 292 de 309 arquivos,
+      # ~4.6k linhas). Isso não é uma correção, é uma reescrita — e num projeto
+      # que tenha código adotado de terceiro, ela atropela justamente o que não
+      # se deve reescrever. Com `strict-format: false` o projeto liga lint,
+      # tipagem e segurança HOJE e formata quando puder, em commit próprio.
+      #
+      # 📌 É o mesmo desenho que `strict-mypy`/`strict-bandit` já usam. A
+      # diferença é o default: aqueles são ruidosos por natureza e começam
+      # frouxos; formatação é binária e auto-corrigível, então começa apertada.
       - name: Ruff format check
         uses: astral-sh/ruff-action@v4.1.0
+        continue-on-error: ${{ !inputs.strict-format }}
         with:
           version: "0.15.21"
           src: ${{ inputs.working-directory }}
