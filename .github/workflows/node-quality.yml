@@ -31,6 +31,20 @@ on:
           e do $schema dos biome.json do projeto — é o que garante local == CI.
           Existe como input para o projeto que sobe o Biome poder casar as duas
           pontas SEM mover a tag compartilhada deste repositório.
+    # 🔴 HeroUI Pro (24/09/2026, vita-track SPRINT-03 E01). O `@heroui-pro/react` do
+    # npm é só um baixador: os componentes chegam por um `postinstall` que exige
+    # credencial, e sem ela o `npm ci` MORRE antes de Biome e tsc (medido no
+    # beesaude em 31/08/2026). Segredo de org NÃO chega sozinho a workflow
+    # reutilizável: o chamador passa pelo nome e o passo tem de referenciá-lo
+    # (docs.github.com, "Reuse workflows" e `on.workflow_call.secrets`, lidos em
+    # 24/09/2026). Opcional: quem não usa HeroUI Pro não passa nada e a variável
+    # fica vazia — com ela vazia o postinstall não recusa (medido no beesaude em
+    # 30/08/2026).
+    # ⚠️ Token de CI/CD do dashboard do HeroUI, NUNCA o pessoal.
+    secrets:
+      HEROUI_AUTH_TOKEN:
+        required: false
+        description: 'Token de CI/CD do HeroUI Pro, para o postinstall do @heroui-pro/react.'
 
 jobs:
   node:
@@ -48,6 +62,8 @@ jobs:
       - name: Install
         working-directory: ${{ inputs.working-directory }}
         run: npm ci --no-audit --no-fund
+        env:
+          HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
 
       # ── Biome: lint + format (config DO PROJETO, auto-descoberta) ──
       # Monorepo: biome.json "root" na raiz + frontend/biome.json "root": false.
