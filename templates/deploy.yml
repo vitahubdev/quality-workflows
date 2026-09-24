@@ -52,6 +52,10 @@ jobs:
     uses: vitahubdev/quality-workflows/.github/workflows/node-quality.yml@v1
     with:
       working-directory: frontend
+    # Só com HeroUI Pro: sem o token o postinstall recusa e o `npm ci` morre.
+    # Segredo de org não chega sozinho ao workflow reutilizável — passe pelo nome.
+    # secrets:
+    #   HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     permissions:
       contents: read
 
